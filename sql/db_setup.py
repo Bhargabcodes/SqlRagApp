@@ -1,19 +1,18 @@
 import sqlite3
 
-# This creates a real file named 'ecommerce.db' in your current folder
-connection = sqlite3.connect("ecommerce.db")
-cursor = connection.cursor()
+conn = sqlite3.connect("ecommerce.db")
+cursor = conn.cursor()
 
-# Create the table structure
+# Products table
 cursor.execute(
     """
     CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY, 
-        name TEXT, 
-        category TEXT, 
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        category TEXT,
         price REAL
     )
-"""
+    """
 )
 
 sample_data = [
@@ -24,9 +23,24 @@ sample_data = [
     (105, "Monitor", "Electronics", 300.00),
 ]
 
-# Insert data safely
-cursor.executemany("INSERT OR IGNORE INTO products VALUES (?, ?, ?, ?)", sample_data)
+cursor.executemany(
+    "INSERT OR IGNORE INTO products VALUES (?, ?, ?, ?)",
+    sample_data
+)
 
-connection.commit()
-connection.close()
+# Schemas table
+cursor.execute(
+    """
+    CREATE TABLE IF NOT EXISTS schemas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        schema_name TEXT NOT NULL,
+        schema_content TEXT NOT NULL
+    )
+    """
+)
+
+conn.commit()
+conn.close()
+
 print("Database 'ecommerce.db' created and populated successfully!")
+print("Schemas table created.")
