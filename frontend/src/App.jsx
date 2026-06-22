@@ -7,6 +7,8 @@ import ResultsPanel from "./components/ResultsPanel";
 import QuestionInput from "./components/QuestionInput";
 import SchemaManager from "./components/SchemaManager";
 import DataManager from "./components/DataManager";
+import ColorBends from "./components/ColorBends";
+import GradualBlur from "./components/GradualBlur";
 
 function App() {
   const [result, setResult] = useState(null);
@@ -36,7 +38,7 @@ function App() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            question: question,
+            question,
             schema: selectedSchema,
           }),
         }
@@ -47,7 +49,6 @@ function App() {
       console.log(data);
 
       setQuery(data.sql);
-
     } catch (err) {
       console.log(err);
     } finally {
@@ -79,15 +80,14 @@ function App() {
 
       if (data.error) {
         setResult({
-          error: data.error
+          error: data.error,
         });
         return;
       }
 
       setResult({
-        rows: data.results || []
+        rows: data.results || [],
       });
-
     } catch (err) {
       console.log(err);
     } finally {
@@ -96,22 +96,48 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white">
+    <div className="relative min-h-screen text-white overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <ColorBends
+          className="w-full h-full"
+          style={{
+            width: "100vw",
+            height: "100vh",
+          }}
+          colors={["#A855F7"]}
+          rotation={90}
+          speed={0.2}
+          scale={1}
+          frequency={1}
+          warpStrength={1}
+          mouseInfluence={1}
+          noise={0.15}
+          parallax={0.5}
+          iterations={1}
+          intensity={1.5}
+          bandWidth={6}
+          transparent={false}
+          autoRotate={0}
+        />
+      </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      {/* Dark Overlay */}
+      <div className="fixed inset-0 bg-[#0F172A]/75 z-[1]" />
 
+      {/* Main Content */}
+      <div className="relative z-10 max-w-7xl mx-auto p-6">
         <Header />
 
         <div className="grid grid-cols-12 gap-6">
-
+          {/* Sidebar */}
           <div className="col-span-2">
-            {/* --- Step 2: Pass selectedSchema prop to Sidebar component --- */}
             <Sidebar selectedSchema={selectedSchema} />
           </div>
 
+          {/* Main Panel */}
           <div className="col-span-10 space-y-6">
-
-            {/* Choose Data Source Section */}
+            {/* Choose Data Source */}
             <div className="bg-[#111827] border border-slate-700 rounded-xl p-4 text-white">
               <h3 className="font-semibold mb-3">
                 Choose Data Source
@@ -121,7 +147,9 @@ function App() {
                 <button
                   onClick={() => {
                     setDataSource("default");
-                    setSelectedSchema("products(id,name,category,price)");
+                    setSelectedSchema(
+                      "products(id,name,category,price)"
+                    );
                   }}
                   className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
                     dataSource === "default"
@@ -162,7 +190,7 @@ function App() {
               </div>
             </div>
 
-            {/* Conditional Sub-Panels based on Selection */}
+            {/* Default DB */}
             {dataSource === "default" && (
               <div className="bg-[#111827] border border-slate-700 rounded-xl p-4">
                 <div className="flex items-center justify-between">
@@ -170,7 +198,6 @@ function App() {
                     <h3 className="font-semibold text-white">
                       Active Data Source
                     </h3>
-
                     <p className="text-sm text-slate-400 mt-1">
                       Default E-Commerce Database
                     </p>
@@ -183,6 +210,7 @@ function App() {
               </div>
             )}
 
+            {/* Saved Schemas */}
             {dataSource === "saved" && (
               <>
                 {selectedSchema && (
@@ -212,6 +240,7 @@ function App() {
               </>
             )}
 
+            {/* New Schema */}
             {dataSource === "new" && (
               <SchemaManager
                 selectedSchema={selectedSchema}
@@ -219,11 +248,15 @@ function App() {
               />
             )}
 
-            {/* Only reveal Data Manager for custom sources AFTER a schema is explicitly selected */}
-            {selectedSchema && dataSource !== "default" && (
-              <DataManager selectedSchema={selectedSchema} />
-            )}
+            {/* Data Manager */}
+            {selectedSchema &&
+              dataSource !== "default" && (
+                <DataManager
+                  selectedSchema={selectedSchema}
+                />
+              )}
 
+            {/* Question Input */}
             <QuestionInput
               question={question}
               setQuestion={setQuestion}
@@ -231,6 +264,7 @@ function App() {
               generateSQL={generateSQL}
             />
 
+            {/* Query Editor */}
             <QueryEditor
               query={query}
               setQuery={setQuery}
@@ -238,18 +272,28 @@ function App() {
               runQuery={runQuery}
             />
 
+            {/* Results */}
             <ResultsPanel result={result} />
-
           </div>
-
         </div>
 
+        {/* Footer */}
         <div className="mt-10 border-t border-slate-800 pt-4 text-sm text-slate-500">
           FastAPI • React • SQLite • Groq
         </div>
 
+        {/* Bottom Blur */}
+        <GradualBlur
+          target="parent"
+          position="bottom"
+          height="7rem"
+          strength={2}
+          divCount={5}
+          curve="bezier"
+          exponential
+          opacity={1}
+        />
       </div>
-
     </div>
   );
 }
