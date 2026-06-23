@@ -1,26 +1,25 @@
 import sqlite3
+import re
 
 
 def create_tables_from_schema(schema_text):
     conn = sqlite3.connect("ecommerce.db")
     cursor = conn.cursor()
 
-    tables = schema_text.split("),")
+    table_matches = re.findall(
+        r'(\w+)\s*\((.*?)\)',
+        schema_text,
+        re.DOTALL
+    )
 
-    for table in tables:
-        table = table.strip().replace(")", "")
-
-        table_name = table.split("(")[0].strip()
-
-        columns_part = table.split("(")[1]
+    for table_name, columns_text in table_matches:
 
         columns = [
             col.strip()
-            for col in columns_part.split(",")
+            for col in columns_text.split(",")
+            if col.strip()
         ]
 
-        # --- Updated Block ---
-        # Refactored to map direct raw column configurations
         column_defs = ", ".join(columns)
 
         query = f"""
@@ -29,6 +28,9 @@ def create_tables_from_schema(schema_text):
             {column_defs}
         )
         """
+
+        print("CREATING:", table_name)
+        print(query)
 
         cursor.execute(query)
 

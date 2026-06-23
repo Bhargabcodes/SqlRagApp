@@ -74,66 +74,72 @@ function DataManager({ selectedSchema }) {
   };
 
   const insertRow = async () => {
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/insert-row",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            table_name: selectedTable,
-            data: formData,
-          }),
-        }
-      );
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/insert-row",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          table_name: selectedTable,
+          data: formData,
+        }),
+      }
+    );
 
-      const data = await response.json();
-      
-      alert(data.message);
-      fetchTableData(selectedTable); 
+    const data = await response.json();
+
+    alert(data.message || data.error);
+
+    if (data.message) {
+      fetchTableData(selectedTable);
 
       const clearedData = {};
       columns.forEach((col) => {
         clearedData[col] = "";
       });
+
       setFormData(clearedData);
-
-    } catch (err) {
-      console.log(err);
     }
-  };
-
+  } catch (err) {
+    console.error(err);
+    alert("Failed to connect to backend");
+  }
+};
   // --- Step 1: Added Delete Function ---
   const deleteRow = async (row) => {
-    const idColumn = Object.keys(row)[0];
+  const idColumn = Object.keys(row)[0];
 
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/delete-row",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            table_name: selectedTable,
-            row_id: row[idColumn],
-            id_column: idColumn,
-          }),
-        }
-      );
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/delete-row",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          table_name: selectedTable,
+          row_id: row[idColumn],
+          id_column: idColumn,
+        }),
+      }
+    );
 
-      const data = await response.json();
+    const data = await response.json();
 
-      alert(data.message);
+    alert(data.message || data.error);
+
+    if (data.message) {
       fetchTableData(selectedTable);
-
-    } catch (err) {
-      console.log(err);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Failed to connect to backend");
+  }
+};
 
   return (
     <div className="bg-[#111827] border border-slate-700 rounded-xl p-6">

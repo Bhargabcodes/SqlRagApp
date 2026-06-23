@@ -161,33 +161,47 @@ def delete_schema(schema_id: int):
 # Step 7 — Dynamic SQL Row Insertion Endpoint
 @app.post("/insert-row")
 def insert_row(request: InsertRowRequest):
-    conn = sqlite3.connect("ecommerce.db")
-    cursor = conn.cursor()
+    conn = None
 
-    # Clean the incoming column names 
-    clean_columns = [
-        col.split()[0] for col in request.data.keys()
-    ]
-    columns = ", ".join(clean_columns)
+    try:
+        conn = sqlite3.connect("ecommerce.db")
+        cursor = conn.cursor()
 
-    placeholders = ", ".join(["?" for _ in request.data])
+        clean_columns = [
+            col.split()[0]
+            for col in request.data.keys()
+        ]
 
-    values = list(request.data.values())
+        columns = ", ".join(clean_columns)
 
-    query = f"""
-    INSERT INTO {request.table_name} 
-    ({columns}) 
-    VALUES 
-    ({placeholders})
-    """
+        placeholders = ", ".join(
+            ["?" for _ in request.data]
+        )
 
-    cursor.execute(query, values)
+        values = list(request.data.values())
 
-    conn.commit()
-    conn.close()
+        query = f"""
+        INSERT INTO {request.table_name}
+        ({columns})
+        VALUES
+        ({placeholders})
+        """
 
-    return {"message": "Row inserted successfully"}
+        print("TABLE:", request.table_name)
+        print("VALUES:", values)
 
+        cursor.execute(query, values)
+
+        conn.commit()
+
+        return {"message": "Row inserted successfully"}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+    finally:
+        if conn:
+            conn.close()
 
 # --- New Endpoint: Dynamic Row Deletion ---
 @app.post("/delete-row")
