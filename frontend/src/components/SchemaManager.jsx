@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function SchemaManager({ selectedSchema, setSelectedSchema }) {
+  const { authFetch } = useAuth();
   const [schemaName, setSchemaName] = useState("");
   const [schemaContent, setSchemaContent] = useState("");
   const [schemas, setSchemas] = useState([]);
@@ -8,7 +10,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
 
   const fetchSchemas = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/schemas");
+      const response = await authFetch("/schemas");
       const data = await response.json();
       setSchemas(data);
     } catch (err) {
@@ -26,9 +28,8 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
       return;
     }
     try {
-      await fetch("http://127.0.0.1:8000/save-schema", {
+      await authFetch("/save-schema", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ schema_name: schemaName, schema_content: schemaContent }),
       });
       alert("Schema Saved");
@@ -42,7 +43,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
 
   const deleteSchema = async (schemaId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/schema/${schemaId}`, { method: "DELETE" });
+      await authFetch(`/schema/${schemaId}`, { method: "DELETE" });
       setSelectedSchema("");
       fetchSchemas();
     } catch (err) {

@@ -1,8 +1,11 @@
+import os
 import pandas as pd
 from langchain_community.utilities import SQLDatabase
 
-# Connect LangChain to your local SQLite database
-db = SQLDatabase.from_uri("sqlite:///ecommerce.db")
+# Connect LangChain to the local SQLite database (same path as api.py)
+DB_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(DB_DIR, "ecommerce.db")
+db = SQLDatabase.from_uri(f"sqlite:///{DB_PATH}")
 
 
 def execute_llm_query(sql_query):

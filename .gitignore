@@ -3,3 +3,6 @@
 frontend/node_modules/
 .env
 .venv/
+*.db
+server.log
+sql/my_local_database.db

@@ -1,9 +1,12 @@
+import os
 import sqlite3
 import re
 
 
 def create_tables_from_schema(schema_text):
-    conn = sqlite3.connect("ecommerce.db")
+    DB_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(DB_DIR, "ecommerce.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     table_matches = re.findall(

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "./context/AuthContext";
 
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
@@ -9,12 +10,15 @@ import SchemaManager from "./components/SchemaManager";
 import DataManager from "./components/DataManager";
 import ColorBends from "./components/ColorBends";
 import GradualBlur from "./components/GradualBlur";
+import LoginPage from "./components/LoginPage";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 function App() {
+  const { user, loading } = useAuth();
   const [result, setResult] = useState(null);
   const [query, setQuery] = useState("SELECT * FROM products LIMIT 5;");
   const [question, setQuestion] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [appLoading, setAppLoading] = useState(false);
   const [selectedSchema, setSelectedSchema] = useState("");
   const [dataSource, setDataSource] = useState("default");
   const [mounted, setMounted] = useState(false);
@@ -24,9 +28,23 @@ function App() {
     setMounted(true);
   }, []);
 
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="relative min-h-screen text-white overflow-hidden bg-[#0A0614] flex items-center justify-center">
+        <LoadingSpinner size="lg" label="Checking session..." />
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!user) {
+    return <LoginPage />;
+  }
+
   const generateSQL = async () => {
     if (!question.trim()) return;
-    setLoading(true);
+    setAppLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:8000/generate", {
         method: "POST",
@@ -39,12 +57,12 @@ function App() {
     } catch (err) {
       console.log(err);
     } finally {
-      setLoading(false);
+      setAppLoading(false);
     }
   };
 
   const runQuery = async () => {
-    setLoading(true);
+    setAppLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:8000/execute", {
         method: "POST",
@@ -61,7 +79,7 @@ function App() {
     } catch (err) {
       console.log(err);
     } finally {
-      setLoading(false);
+      setAppLoading(false);
     }
   };
 
@@ -227,7 +245,7 @@ function App() {
             <QuestionInput
               question={question}
               setQuestion={setQuestion}
-              loading={loading}
+              loading={appLoading}
               generateSQL={generateSQL}
             />
 
@@ -235,12 +253,12 @@ function App() {
             <QueryEditor
               query={query}
               setQuery={setQuery}
-              loading={loading}
+              loading={appLoading}
               runQuery={runQuery}
             />
 
             {/* Results */}
-            <ResultsPanel result={result} loading={loading} />
+            <ResultsPanel result={result} loading={appLoading} />
           </div>
         </div>
 
