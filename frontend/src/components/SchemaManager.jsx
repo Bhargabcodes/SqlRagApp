@@ -166,7 +166,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
                   <svg className="w-5 h-5 text-purple-400/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
                   </svg>
-                  <span className="font-medium text-purple-300">{schema.schema_name}</span>
+                  <span className="font-medium text-white/90">{schema.schema_name}</span>
                 </div>
 
                 <button
@@ -186,7 +186,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
                 </button>
               </div>
 
-              <div className="text-xs text-white/30 mt-3 font-mono bg-[#0A0614]/40 p-2.5 rounded-xl border border-white/[0.04] overflow-x-auto whitespace-pre-wrap">
+              <div className="text-xs text-white/80 mt-3 font-mono bg-[#0A0614]/40 p-2.5 rounded-xl border border-white/[0.04] overflow-x-auto whitespace-pre-wrap">
                 {schema.schema_content}
               </div>
             </div>
@@ -195,7 +195,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
           {schemas.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-center border border-dashed border-white/[0.06] rounded-2xl">
               <div className="text-2xl mb-2 opacity-20">📂</div>
-              <div className="text-sm text-white/30">No custom schemas defined yet.</div>
+              <div className="text-sm text-white/50">No custom schemas defined yet.</div>
             </div>
           )}
 
@@ -204,7 +204,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
               <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">
                 Schema Details
               </h3>
-              <div className="text-white/60 text-sm font-mono bg-[#0A0614]/40 p-3 rounded-xl border border-white/[0.04] whitespace-pre-wrap">
+              <div className="text-white/80 text-sm font-mono bg-[#0A0614]/40 p-3 rounded-xl border border-white/[0.04] whitespace-pre-wrap">
                 {activeSchema.schema_content}
               </div>
             </div>
