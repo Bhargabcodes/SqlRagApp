@@ -27,9 +27,6 @@ sys.path.append(
 from .db_executor import execute_llm_query
 from .schema_parser import create_tables_from_schema
 
-# Import from RAG package
-from rag_engine import generate_sql, llm
-
 app = FastAPI(
     title="SQL RAG API",
     description="API for executing SQL queries on the ecommerce database",
@@ -501,6 +498,8 @@ def execute(request: SQLRequest):
 @app.post("/generate")
 def generate(request: QuestionRequest):
     """Generate SQL from natural language."""
+    # Lazy import to allow server to start without GROQ_API_KEY
+    from rag_engine import generate_sql, llm
     sql = generate_sql(
         request.question,
         request.schema,
