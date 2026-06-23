@@ -68,6 +68,44 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
       </div>
 
       <div className="space-y-3">
+        {/* Format instruction box */}
+        <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] text-xs space-y-3">
+          <p className="text-white/60 font-medium">
+            Tables must be in the following format:
+          </p>
+
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 flex-shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <svg className="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
+            <div className="text-white/70 leading-relaxed">
+              <span className="text-emerald-400 font-semibold">✓ Correct:</span>{' '}
+              <code className="text-[11px] leading-relaxed">
+                Students(student_id INTEGER PRIMARY KEY, name TEXT, age INTEGER, department TEXT, cgpa REAL)<br />
+                Courses(course_id INTEGER PRIMARY KEY, course_name TEXT, credits INTEGER)<br />
+                Enrollments(enrollment_id INTEGER PRIMARY KEY, student_id INTEGER, course_id INTEGER, semester TEXT)
+              </code>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 flex-shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20">
+              <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </span>
+            <div className="text-white/70 leading-relaxed">
+              <span className="text-red-400 font-semibold">✗ Incorrect:</span>{' '}
+              <code className="text-[11px]">
+                CREATE TABLE Students (student_id INT, name VARCHAR(100), ...);
+              </code>
+            </div>
+          </div>
+        </div>
+
         <input
           value={schemaName}
           onChange={(e) => setSchemaName(e.target.value)}
