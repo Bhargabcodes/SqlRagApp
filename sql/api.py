@@ -9,12 +9,17 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+from dotenv import load_dotenv
+
 import bcrypt
 import jwt
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
+
+# Load environment variables from RAG/.env
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "RAG", ".env"))
 
 # Add RAG directory to path for rag_engine import
 sys.path.append(
@@ -47,9 +52,9 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "sql-rag-app-secret-key-change-in-prod
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
 
-# Gmail SMTP config
-SMTP_EMAIL = "sqlragapp@gmail.com"
-SMTP_APP_PASSWORD = "eufw tzae avei rdkq"
+# Gmail SMTP config (from env vars; fallback for backward compatibility)
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "sqlragapp@gmail.com")
+SMTP_APP_PASSWORD = os.environ.get("SMTP_APP_PASSWORD", "")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
