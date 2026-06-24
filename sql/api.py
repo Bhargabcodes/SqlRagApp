@@ -21,16 +21,15 @@ from pydantic import BaseModel
 # Load environment variables from RAG/.env
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "RAG", ".env"))
 
-# Add RAG directory to path for rag_engine import
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "RAG")
-    )
-)
+# Add both RAG and sql directories to path for imports
+rag_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "RAG"))
+sql_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+sys.path.append(rag_dir)
+sys.path.insert(0, sql_dir)
 
 # Local imports from the sql/ package
-from .db_executor import execute_llm_query
-from .schema_parser import create_tables_from_schema
+from db_executor import execute_llm_query
+from schema_parser import create_tables_from_schema
 
 app = FastAPI(
     title="SQL RAG API",
