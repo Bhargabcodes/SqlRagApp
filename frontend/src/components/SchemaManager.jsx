@@ -1,26 +1,16 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-function SchemaManager({ selectedSchema, setSelectedSchema }) {
+function SchemaManager({ selectedSchema, setSelectedSchema, schemas, fetchSchemas }) {
   const { authFetch } = useAuth();
   const [schemaName, setSchemaName] = useState("");
   const [schemaContent, setSchemaContent] = useState("");
-  const [schemas, setSchemas] = useState([]);
   const [activeSchema, setActiveSchema] = useState(null);
 
-  const fetchSchemas = async () => {
-    try {
-      const response = await authFetch("/schemas");
-      const data = await response.json();
-      setSchemas(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchSchemas();
-  }, []);
+  // Custom modal state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [schemaIdToDelete, setSchemaIdToDelete] = useState(null);
+  const [schemaNameToDelete, setSchemaNameToDelete] = useState("");
 
   const saveSchema = async () => {
     if (!schemaName.trim() || !schemaContent.trim()) {
@@ -51,12 +41,29 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
     }
   };
 
+  const handleDeleteClick = (schema, e) => {
+    e.stopPropagation();
+    setSchemaIdToDelete(schema.id);
+    setSchemaNameToDelete(schema.schema_name);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (schemaIdToDelete) {
+      deleteSchema(schemaIdToDelete);
+    }
+    setShowDeleteConfirm(false);
+    setSchemaIdToDelete(null);
+    setSchemaNameToDelete("");
+    setActiveSchema(null);
+  };
+
   return (
-    <div className="glass-card rounded-2xl p-6 animate-fade-in-up">
+    <div className="glass-card rounded-2xl p-6 animate-fade-in-up relative">
       <div className="flex items-center gap-3 mb-5">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 border border-cyan-500/20">
           <svg className="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
             <line x1="16" y1="13" x2="8" y2="13" />
             <line x1="16" y1="17" x2="8" y2="17" />
@@ -125,7 +132,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
           <button
             onClick={saveSchema}
             disabled={!schemaName.trim() || !schemaContent.trim()}
-            className="glass-btn glass-btn-primary px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-30 disabled:cursor-not-allowed"
+            className="glass-btn glass-btn-primary px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -140,7 +147,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
       </div>
 
       <div className="mt-8">
-        <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">
+        <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 font-serif">
           Saved Schemas
         </h3>
 
@@ -153,11 +160,11 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
                 setActiveSchema(schema);
               }}
               className={`
-                group cursor-pointer rounded-2xl p-4 border transition-all duration-300
+                group cursor-pointer rounded-2xl p-4 transition-all duration-300
                 ${
                   selectedSchema === schema.schema_content
-                    ? "border-purple-500/30 bg-purple-500/5 shadow-lg shadow-purple-500/5"
-                    : "border-white/[0.06] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.12]"
+                    ? "schema-card-selected shadow-lg"
+                    : "schema-card-unselected"
                 }
               `}
               style={{ animationDelay: `${index * 0.08}s` }}
@@ -171,18 +178,13 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
                 </div>
 
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm("Are you sure you want to delete this schema? All associated tables will be removed.")) {
-                      deleteSchema(schema.id);
-                    }
-                  }}
-                  className="p-1.5 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => handleDeleteClick(schema, e)}
+                  className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
                   title="Delete Schema"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                   </svg>
                 </button>
               </div>
@@ -202,7 +204,7 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
 
           {activeSchema && (
             <div className="mt-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 animate-fade-in-up">
-              <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3 font-serif">
                 Schema Details
               </h3>
               <div className="text-white/80 text-sm font-mono bg-[#0A0614]/40 p-3 rounded-xl border border-white/[0.04] whitespace-pre-wrap">
@@ -212,6 +214,47 @@ function SchemaManager({ selectedSchema, setSelectedSchema }) {
           )}
         </div>
       </div>
+
+      {/* Custom Glassmorphism Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-[100] animate-fade-in">
+          <div className="glass-card rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 animate-scale-in border border-border/40 shadow-2xl bg-card text-foreground">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/10 border border-red-500/25 text-red-500">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </span>
+              <h3 className="font-bold text-foreground text-base font-serif">Confirm Deletion</h3>
+            </div>
+
+            <p className="text-xs text-foreground/75 leading-relaxed font-sans">
+              Are you sure you want to delete the schema <span className="font-bold">"{schemaNameToDelete}"</span>? All associated tables will be removed.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setSchemaIdToDelete(null);
+                  setSchemaNameToDelete("");
+                }}
+                className="px-4 py-2 text-xs font-semibold text-foreground/60 hover:text-foreground bg-foreground/[0.02] hover:bg-foreground/[0.06] border border-border/60 rounded-xl transition-all cursor-pointer"
+              >
+                No
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-5 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 border border-red-500 hover:border-red-600 rounded-xl transition-all shadow-md cursor-pointer"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

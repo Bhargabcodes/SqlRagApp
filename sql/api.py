@@ -114,7 +114,9 @@ def send_otp_email(to_email: str, otp: str):
     try:
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
-        server.login(SMTP_EMAIL, SMTP_APP_PASSWORD)
+        # Strip spaces from app password (Gmail app passwords often include spaces for readability)
+        clean_password = SMTP_APP_PASSWORD.replace(" ", "")
+        server.login(SMTP_EMAIL, clean_password)
         server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
         server.quit()
         return True
@@ -313,7 +315,7 @@ def verify_otp(request: VerifyOTPRequest):
     cursor.execute(
         """SELECT id, otp, expires_at FROM otp_codes
            WHERE email = ? AND used = 0
-           ORDER BY created_at DESC LIMIT 1""",
+           ORDER BY id DESC LIMIT 1""",
         (email,),
     )
     record = cursor.fetchone()
