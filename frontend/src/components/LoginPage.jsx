@@ -1,8 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
   const { login, API_BASE } = useAuth();
+  const [theme, setTheme] = useState(() =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  );
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
+      setTheme(e.matches ? "dark" : "light");
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   // Tabs
   const [tab, setTab] = useState("login"); // "login" | "register"
@@ -130,7 +155,7 @@ function LoginPage() {
   // ── OTP Verification Screen ──
   if (regSuccess) {
     return (
-      <ScreenWrapper>
+      <ScreenWrapper theme={theme} onToggleTheme={toggleTheme}>
         <div className="w-full max-w-md mx-auto">
           <LogoSection />
           <div className="glass-card rounded-3xl p-8 animate-fade-in-up">
@@ -205,7 +230,7 @@ function LoginPage() {
 
   // ── Main Login/Register Screen ──
   return (
-    <ScreenWrapper>
+    <ScreenWrapper theme={theme} onToggleTheme={toggleTheme}>
       <div className="w-full max-w-md mx-auto">
         <LogoSection />
 
@@ -342,15 +367,20 @@ function LoginPage() {
 
 // ── Shared Layout ──
 
-function ScreenWrapper({ children }) {
+function ScreenWrapper({ children, theme, onToggleTheme }) {
   return (
     <div className="relative min-h-screen text-white overflow-hidden">
       {/* Background */}
-      <div className="fixed inset-0 z-0 bg-[#0A0614]">
-        <div className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
-        <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
-        <div className="fixed top-[50%] right-[-5%] w-[30%] h-[30%] rounded-full bg-blue-600/8 blur-[100px] pointer-events-none" />
-        <div className="fixed inset-0 bg-[#0A0614]/60 backdrop-blur-[2px]" />
+      <div className="fixed inset-0 z-0 bg-background">
+        <div className={`fixed top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${
+          theme === "dark" ? "bg-emerald-800/10" : "bg-teal-600/5"
+        }`} />
+        <div className={`fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${
+          theme === "dark" ? "bg-teal-700/10" : "bg-emerald-600/5"
+        }`} />
+        <div className={`fixed inset-0 backdrop-blur-[2px] transition-colors duration-1000 ${
+          theme === "dark" ? "bg-[#081B18]/70" : "bg-[#F8F6F0]/50"
+        }`} />
         <div
           className="fixed inset-0 z-[1] pointer-events-none opacity-[0.03]"
           style={{
@@ -358,6 +388,25 @@ function ScreenWrapper({ children }) {
             backgroundSize: "60px 60px",
           }}
         />
+      </div>
+
+      {/* Floating Theme Toggle Top-Right */}
+      <div className="absolute top-6 right-6 z-50">
+        <button
+          onClick={onToggleTheme}
+          className="p-2.5 rounded-full bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.08] text-white/60 hover:text-white transition-all duration-300 flex items-center justify-center"
+          title="Toggle Theme"
+        >
+          {theme === "dark" ? (
+            <svg className="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
