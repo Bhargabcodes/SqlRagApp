@@ -32,6 +32,14 @@ app = FastAPI(
     version="2.0.0",
 )
 
+DEFAULT_SCHEMA = "products(id INTEGER, name TEXT, price REAL, category TEXT, stock INTEGER) customers(id INTEGER, name TEXT, email TEXT) orders(id INTEGER, customer_id INTEGER, total REAL)"
+
+
+@app.on_event("startup")
+def init_database():
+    """Ensure default tables exist on startup."""
+    create_tables_from_schema(DEFAULT_SCHEMA)
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -152,7 +160,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 class QuestionRequest(BaseModel):
     question: str
-    schema: str
+    schema_def: str
 
 class SQLRequest(BaseModel):
     query: str
@@ -503,6 +511,8 @@ def delete_schema(schema_id: int, current_user: dict = Depends(get_current_user)
 def execute(request: SQLRequest):
     """Execute a raw SQL query."""
     result = execute_llm_query(request.query)
+    if isinstance(result, dict) and "error" in result:
+        return {"error": result["error"]}
     return {"query": request.query, "results": result}
 
 
@@ -513,7 +523,7 @@ def generate(request: QuestionRequest):
     from RAG.rag_engine import generate_sql, llm
     sql = generate_sql(
         request.question,
-        request.schema,
+        request.schema_def,
         retriever=rag_retriever,
         llm_engine=llm,
         top_k=2,
@@ -573,6 +583,26 @@ def get_tables():
     conn.close()
 
     return [row["name"] for row in rows if row["name"] != "schemas" and not row["name"].startswith("sqlite_")]
+
+
+@app.get("/schema")
+def get_schema():
+    """Get the full database schema as a compact string."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    tables = cursor.fetchall()
+    parts = []
+    for row in tables:
+        name = row["name"]
+        if name == "schemas" or name.startswith("sqlite_"):
+            continue
+        cursor.execute(f"PRAGMA table_info({name})")
+        columns = cursor.fetchall()
+        col_strs = [f"{col['name']} {col['type'] or 'TEXT'}" for col in columns]
+        parts.append(f"{name}({', '.join(col_strs)})")
+    conn.close()
+    return {"schema": " ".join(parts)}
 
 
 @app.get("/table/{table_name}")

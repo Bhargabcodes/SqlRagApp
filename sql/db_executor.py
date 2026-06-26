@@ -21,7 +21,7 @@ def execute_llm_query(sql_query):
 
         # Execute query
         dataframe = pd.read_sql_query(clean_query, engine)
-
+        print("DEBUG: Result DataFrame:", dataframe)
         # If no rows found
         if dataframe.empty:
             return []
