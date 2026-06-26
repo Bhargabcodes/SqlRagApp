@@ -13,17 +13,17 @@ llm = ChatGroq(
     max_tokens=1024
 )
 
-SQL_PROMPT_TEMPLATE = """You are an expert SQL assistant. Your task is to generate a valid, executable SQL query based on the user's question, the provided database schema, and the retrieved SQL rules and templates.
+SQL_PROMPT_TEMPLATE = """You are an expert SQL assistant. Your task is to generate a valid, executable SQL query based on the user's question, the provided database schema, and the retrieved context.
 
 === DATABASE SCHEMA ===
 {schema}
 
-=== SQL SYNTAX REFERENCE & TEMPLATES (Retrieved Context) ===
+=== RETRIEVED CONTEXT ===
 {context}
 
 === STRICTOR SYSTEM GUIDELINES ===
-- Only use tables, columns, and relationships defined in the DATABASE SCHEMA above.
-- Do not invent column or table names.
+- CRITICAL: Use ONLY tables and columns defined in the DATABASE SCHEMA above.
+- CRITICAL: Ignore any other table or column not present in the provided DATABASE SCHEMA.
 - Strictly return SELECT queries only.
 - Do not use markdown code fences.
 - Return only raw SQL.
@@ -35,7 +35,18 @@ Question:
 SQL Query:"""
 def generate_sql(query, schema_input, retriever=None, llm_engine=None, top_k=4):
     print("GENERATE_SQL CALLED")
+    
+    # RAG: Retrieve context if retriever is provided
     context = "Use standard SQL syntax."
+    if retriever:
+        retrieved_docs = retriever.retrieve(query, top_k=top_k)
+        if retrieved_docs:
+            context = "\n".join([doc['content'] for doc in retrieved_docs])
+            print(f"Retrieved {len(retrieved_docs)} documents for context.")
+        else:
+            print("No documents retrieved.")
+    else:
+        print("No retriever provided. Using default context.")
 
     formatted_prompt = SQL_PROMPT_TEMPLATE.format(
         schema=schema_input,

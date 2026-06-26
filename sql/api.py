@@ -1,5 +1,4 @@
 import os
-import sys
 import random
 import string
 import sqlite3
@@ -21,15 +20,11 @@ from pydantic import BaseModel
 # Load environment variables from RAG/.env
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "RAG", ".env"))
 
-# Add both RAG and sql directories to path for imports
-rag_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "RAG"))
-sql_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-sys.path.append(rag_dir)
-sys.path.insert(0, sql_dir)
-
-# Local imports from the sql/ package
-from db_executor import execute_llm_query
-from schema_parser import create_tables_from_schema
+# Local imports
+from sql.db_executor import execute_llm_query
+from sql.schema_parser import create_tables_from_schema
+from RAG.rag_engine import generate_sql, llm
+from RAG.pdf_loader import rag_retriever
 
 app = FastAPI(
     title="SQL RAG API",
@@ -257,7 +252,12 @@ def register(request: RegisterRequest):
     sent = send_otp_email(email, otp)
 
     if not sent:
-        raise HTTPException(status_code=500, detail="Failed to send OTP email. Check SMTP configuration.")
+        print("\n" + "="*80)
+        print("  ⚠️  SMTP SEND FAILED! (DEVELOPMENT FALLBACK ACTIVE)")
+        print(f"  Failed to send verification email to: {email}")
+        print(f"  >>> YOUR VERIFICATION OTP CODE IS: {otp} <<<")
+        print("  Please enter this code in the frontend UI to proceed.")
+        print("="*80 + "\n")
 
     return {"message": "OTP sent to your email. Please verify to complete registration."}
 
@@ -298,7 +298,12 @@ def resend_otp(request: EmailRequest):
     sent = send_otp_email(email, otp)
 
     if not sent:
-        raise HTTPException(status_code=500, detail="Failed to send OTP email.")
+        print("\n" + "="*80)
+        print("  ⚠️  SMTP SEND FAILED! (DEVELOPMENT FALLBACK ACTIVE)")
+        print(f"  Failed to resend verification email to: {email}")
+        print(f"  >>> YOUR VERIFICATION OTP CODE IS: {otp} <<<")
+        print("  Please enter this code in the frontend UI to proceed.")
+        print("="*80 + "\n")
 
     return {"message": "OTP resent to your email."}
 
@@ -505,11 +510,11 @@ def execute(request: SQLRequest):
 def generate(request: QuestionRequest):
     """Generate SQL from natural language."""
     # Lazy import to allow server to start without GROQ_API_KEY
-    from rag_engine import generate_sql, llm
+    from RAG.rag_engine import generate_sql, llm
     sql = generate_sql(
         request.question,
         request.schema,
-        retriever=None,
+        retriever=rag_retriever,
         llm_engine=llm,
         top_k=2,
     )
