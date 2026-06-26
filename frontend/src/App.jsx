@@ -49,9 +49,7 @@ function App() {
   const [query, setQuery] = useState("SELECT id, name, category, price\nFROM products\nWHERE stock > 0\nORDER BY price DESC\nLIMIT 5;");
   const [question, setQuestion] = useState("");
   const [appLoading, setAppLoading] = useState(false);
-  const [selectedSchema, setSelectedSchema] = useState(
-    "products(id,name,price,category,stock) orders(id,customer_id,total) customers(id,name,email)"
-  );
+  const [selectedSchema, setSelectedSchema] = useState("");
   const [dataSource, setDataSource] = useState("default");
   const [schemas, setSchemas] = useState([]);
   const [mounted, setMounted] = useState(false);
@@ -172,6 +170,18 @@ function App() {
     }
   };
 
+  const fetchSchema = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/schema");
+      const data = await response.json();
+      if (data.schema) {
+        setSelectedSchema(data.schema);
+      }
+    } catch (err) {
+      console.log("Failed to fetch schema:", err);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchSchemas();
@@ -180,6 +190,7 @@ function App() {
 
   useEffect(() => {
     setMounted(true);
+    fetchSchema();
   }, []);
 
   // Show loading while checking auth
@@ -203,7 +214,7 @@ function App() {
       const response = await fetch("http://127.0.0.1:8000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, schema: selectedSchema }),
+        body: JSON.stringify({ question, schema_def: selectedSchema }),
       });
       const data = await response.json();
       console.log(data);
@@ -257,6 +268,7 @@ function App() {
       ]);
     } catch (err) {
       console.log(err);
+      setResult({ error: `Network error: ${err.message}` });
     } finally {
       setAppLoading(false);
     }
@@ -519,9 +531,7 @@ function App() {
                         onClick={() => {
                           setDataSource(btn.key);
                           if (btn.key === "default") {
-                            setSelectedSchema(
-                              "products(id,name,price,category,stock) orders(id,customer_id,total) customers(id,name,email)"
-                            );
+                            fetchSchema();
                           } else {
                             setSelectedSchema("");
                           }
