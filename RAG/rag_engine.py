@@ -2,7 +2,7 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 groq_api_key = os.getenv("GROQ_API_KEY")
 

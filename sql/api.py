@@ -17,8 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
-# Load environment variables from RAG/.env
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", "RAG", ".env"))
+# Load environment variables from .env in project root
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Local imports
 from sql.db_executor import execute_llm_query
