@@ -39,7 +39,10 @@ def process_all_pdfs(pdf_directory):
     return all_documents
 
 # Process all PDFs in the data directory
-all_pdf_documents = process_all_pdfs("data/pdfs")
+# The PDFs are in D:\WEB DEV\SNBoseProject\RAG\data\pdfs
+# The script is in D:\WEB DEV\SNBoseProject\RAG\pdf_loader.py
+# So the relative path from RAG/ is 'data/pdfs'
+all_pdf_documents = process_all_pdfs("RAG/data/pdfs")
 
 # %%
 ### Text splitting get into chunks
@@ -266,9 +269,12 @@ vectorstore = VectorStore()
 # %%
 ### convert the text to embeddings and store in vector database
 texts=[doc.page_content for doc in chunks]
-texts
-embeddings=embedding_manager.generate_embeddings(texts)
-vectorstore.add_documents(chunks,embeddings)
+if texts:
+    embeddings=embedding_manager.generate_embeddings(texts)
+    vectorstore.add_documents(chunks,embeddings)
+else:
+    print("No documents to embed/add to vector store.")
+
 
 # %% [markdown]
 # ## Retriver pipeline from vectorstore
