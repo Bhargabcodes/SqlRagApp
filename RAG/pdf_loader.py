@@ -2,6 +2,11 @@
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from project root
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+
 from langchain_community.document_loaders import PyPDFLoader, PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -361,18 +366,11 @@ rag_retriever.retrieve(" Data Definition Language (DDL)")
 # ### Integration VectorDB Context pipline with LLM output
 
 # %%
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
 # print(os.getenv("GROQ_API_KEY"))
 
 # %%
 ### Simple RAG pipeline with Groq LLM
 from langchain_groq import ChatGroq
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
 ### Initialize the Groq LLM (set your GROQ_API_KEY in environment)
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -569,26 +567,9 @@ print(answer_1)
 # print(result["context"][:500])
 
 # %%
-import os
-import sys
-from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-
 # ---------------------------------------------------------------------
 # 1. Environment & Path Configurations
 # ---------------------------------------------------------------------
-try:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-except NameError:
-    cwd = os.getcwd()
-    if os.path.basename(cwd) == "notebook":
-        BASE_DIR = os.path.dirname(cwd)
-    else:
-        BASE_DIR = cwd
-
-dotenv_path = os.path.join(BASE_DIR, ".env")
-load_dotenv(dotenv_path=dotenv_path)
-
 groq_api_key = os.getenv("GROQ_API_KEY")
 if not groq_api_key:
     print("[-] Error: GROQ_API_KEY not found in your environment setup.")
