@@ -82,7 +82,7 @@ A React 19 + Vite single-page application with a dark glass-morphism UI featurin
 
 This project uses `pyproject.toml` for dependency management. Ensure you have `uv` installed.
 
-Create a `.env` file in the `RAG/` directory with the following variables:
+Create a `.env` file in the **project root** directory with the following variables:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
