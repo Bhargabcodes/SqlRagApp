@@ -74,21 +74,24 @@ A React 19 + Vite single-page application with a dark glass-morphism UI featurin
 
 - Python 3.12+
 - Node.js 20+
-- [uv](https://github.com/astral-sh/uv) (recommended) or pip
+- [uv](https://github.com/astral-sh/uv) (recommended)
 - A [Groq API key](https://console.groq.com)
+- A Gmail account with 2-Factor Authentication enabled (for OTP)
 
-### 1. Clone & Set Up the RAG Engine
+### Configuration & Dependencies
 
-```bash
-cd RAG
-uv sync          # or: pip install -r requirements.txt
-```
+This project uses `pyproject.toml` for dependency management. Ensure you have `uv` installed.
 
-Create a `.env` file in the `RAG/` directory:
+Create a `.env` file in the `RAG/` directory with the following variables:
 
 ```env
-GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_API_KEY=your_groq_api_key
+HF_TOKEN=your_huggingface_token
+SMTP_EMAIL=your_gmail_address
+SMTP_APP_PASSWORD=your_16_char_gmail_app_password
 ```
+
+Note: Generate the `SMTP_APP_PASSWORD` from your Google Account security settings after enabling 2FA.
 
 ### 2. Set Up the SQL Backend
 
