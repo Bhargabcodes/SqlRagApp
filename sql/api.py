@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import string
 import sqlite3
@@ -17,14 +18,37 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
-# Load environment variables from .env in project root
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+# Load environment variables from .env in project root (fall back to RAG/.env)
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+load_dotenv(os.path.join(PROJECT_ROOT, "RAG", ".env"))
+
+# Ensure project root is importable so `uvicorn api:app` works from sql/ as well
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 # Local imports
 from sql.db_executor import execute_llm_query
 from sql.schema_parser import create_tables_from_schema
 from RAG.rag_engine import generate_sql, llm
-from RAG.pdf_loader import rag_retriever
+
+# RAG retriever is loaded lazily so the server starts even if the vector
+# store or embedding model is unavailable (pdf_loader.py is a notebook-style
+# script that must not be imported at module load).
+_retriever_cache = {}
+
+
+def _get_rag_retriever():
+    if "retriever" not in _retriever_cache:
+        try:
+            from RAG.retriever import rag_retriever
+
+            _retriever_cache["retriever"] = rag_retriever
+        except Exception as e:
+            print(f"[warn] RAG retriever unavailable, continuing without it: {e}")
+            _retriever_cache["retriever"] = None
+    return _retriever_cache["retriever"]
+
 
 app = FastAPI(
     title="SQL RAG API",
@@ -527,7 +551,7 @@ def generate(request: QuestionRequest):
     sql = generate_sql(
         request.question,
         request.schema_def,
-        retriever=rag_retriever,
+        retriever=_get_rag_retriever(),
         llm_engine=llm,
         top_k=2,
     )
