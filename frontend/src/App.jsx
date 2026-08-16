@@ -602,6 +602,16 @@ function App() {
                   <DataManager selectedSchema={selectedSchema} />
                 )}
 
+                {/* Ask a Question (shown once a database is selected) */}
+                {selectedSchema && (
+                  <QuestionInput
+                    question={question}
+                    setQuestion={setQuestion}
+                    loading={appLoading}
+                    generateSQL={generateSQL}
+                  />
+                )}
+
                 {/* Query Editor */}
                 <QueryEditor
                   query={query}

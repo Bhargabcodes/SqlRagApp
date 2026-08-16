@@ -20,10 +20,10 @@ function QuestionInput({ question, setQuestion, loading, generateSQL }) {
         </span>
         <div>
           <h2 className="text-sm font-semibold text-foreground">
-            Natural language to SQL
+            Ask a Question
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Describe what you need in plain English
+            Ask anything about your database in natural language
           </p>
         </div>
       </div>

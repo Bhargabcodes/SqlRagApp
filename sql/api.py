@@ -386,7 +386,10 @@ def login(request: LoginRequest):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     # Check password
-    if not bcrypt.checkpw(request.password.encode("utf-8"), user["password"]):
+    db_password = user["password"]
+    if isinstance(db_password, str):
+        db_password = db_password.encode("utf-8")
+    if not bcrypt.checkpw(request.password.encode("utf-8"), db_password):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     # Check if verified
